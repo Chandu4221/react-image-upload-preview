@@ -1,19 +1,18 @@
 import React, { Component } from 'react';
 import Dropzone from 'react-dropzone';
-
-import ImageUploadPreview from './ImageUploadPreview';
+import ImagePreviewList from './ImagePreviewList';
 
 const acceptedFileTypes =
   'image/x-png, image/png, image/jpg, image/jpeg, image/gif';
 const acceptedFileTypesArray = acceptedFileTypes
   .split(',')
   .map(item => item.trim());
-const imageMaxSize = 100000; //bytes
+const imageMaxSize = 1000000000; //bytes
 class ImageUpload extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      imageUploadPreviewSrc: null
+      imageUploadPreviewSrc: []
     };
   }
   verifyFile = files => {
@@ -39,18 +38,25 @@ class ImageUpload extends Component {
       if (isVerified) {
         const currentFile = acceptedFiles[0];
         const reader = new FileReader();
+        console.log(acceptedFiles);
         reader.addEventListener(
           'load',
           () => {
+            let previewUrlArray = acceptedFiles.map((file, i) => {
+              return {
+                file: file,
+                imgSrc: reader.result,
+                previewUrl: URL.createObjectURL(file)
+              };
+            });
             this.setState({
-              imageUploadPreviewSrc: reader.result
+              imageUploadPreviewSrc: previewUrlArray
             });
           },
           false
         );
         reader.readAsDataURL(currentFile);
       }
-      console.log(acceptedFiles);
     }
   };
   render() {
@@ -59,7 +65,7 @@ class ImageUpload extends Component {
       <div>
         <Dropzone
           accept={acceptedFileTypes}
-          multiple={false}
+          multiple={true}
           maxSize={imageMaxSize}
           onDrop={this.handleDrop}
         >
@@ -72,8 +78,8 @@ class ImageUpload extends Component {
             </section>
           )}
         </Dropzone>
-        {imageUploadPreviewSrc !== null ? (
-          <ImageUploadPreview source={imageUploadPreviewSrc} />
+        {imageUploadPreviewSrc.length > 0 ? (
+          <ImagePreviewList source={imageUploadPreviewSrc} />
         ) : null}
       </div>
     );
